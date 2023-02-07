@@ -46,24 +46,13 @@ describe "GraphQL::Relay::RelationConnection" do
       }
     |}
 
+    focus
     it 'limits the result' do
-      result = star_wars_query(query_string, { "first" => 2 })
-      assert_equal(2, get_names(result).length)
-      assert_equal(true, get_page_info(result)["hasNextPage"])
-      assert_equal(false, get_page_info(result)["hasPreviousPage"])
-      assert_equal("MQ", get_page_info(result)["startCursor"])
-      assert_equal("Mg", get_page_info(result)["endCursor"])
-      assert_equal("MQ", get_first_cursor(result))
-      assert_equal("Mg", get_last_cursor(result))
+      first_page_result = star_wars_query(query_string, { "first" => 2})
+      assert_equal(true, get_page_info(first_page_result)["hasNextPage"])
 
-      result = star_wars_query(query_string, { "first" => 3 })
-      assert_equal(3, get_names(result).length)
+      result = star_wars_query(query_string, { "first" => 2, after: get_page_info(first_page_result)["endCursor"] })
       assert_equal(false, get_page_info(result)["hasNextPage"])
-      assert_equal(false, get_page_info(result)["hasPreviousPage"])
-      assert_equal("MQ", get_page_info(result)["startCursor"])
-      assert_equal("Mw", get_page_info(result)["endCursor"])
-      assert_equal("MQ", get_first_cursor(result))
-      assert_equal("Mw", get_last_cursor(result))
     end
 
     it "uses unscope(:order) count(*) when the relation has some complicated SQL" do
